@@ -17,6 +17,9 @@ args = parser.parse_args(sys.argv[1:])
 if args.list_versions and args.download:
     parser.error('Cannot use --list-versions and --download at the same time')
 
+if not args.list_versions and not args.download:
+    parser.error('At least one of --list-versions and --download is required')
+
 sources = []
 for source in args.source:
     match source:
