@@ -4,6 +4,7 @@ import progressbar
 import requests
 from bs4 import BeautifulSoup, Tag
 from user_agent import generate_user_agent
+import datetime
 
 
 class ApkPure:
@@ -66,9 +67,12 @@ class ApkPure:
             version_code = block.get('data-dt-versioncode')
             file_size = block.get('data-dt-filesize')
             date_block = block.find('span', class_='update-on')
+            update_date = '--.--.----'
             if date_block is not None:
                 date_block_text = date_block.get_text()
-                info['update_date'] = date_block_text.strip()
+                update_date = date_block_text.strip()
+                update_date = datetime.datetime.strptime(update_date, '%m/%d/%Y').strftime('%m.%d.%Y')
+            info['update_date'] = update_date
             info['version'] = version_number
             version_code = cast(str, version_code)
             info['version_code'] = int(version_code)
