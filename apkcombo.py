@@ -69,7 +69,7 @@ class ApkCombo:
             info['version_code'] = int(version_code)
             file_size = int(file_size) * 1024 * 1024
             info['file_size'] = file_size
-            info['update_date'] = '?'
+            info['update_date'] = '--.--.----'
             versions.append(info)
 
         return versions
