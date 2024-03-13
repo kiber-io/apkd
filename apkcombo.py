@@ -25,7 +25,10 @@ class ApkCombo:
 
     def get_app_info(self, pkg: str) -> dict:
         app = {}
-        app['versions'] = self.list_app_versions(f'https://apkcombo.com/ru/downloader/?package={pkg}&ajax=1')
+        versions = self.list_app_versions(f'https://apkcombo.com/ru/downloader/?package={pkg}&ajax=1')
+        if len(versions) == 0:
+            raise FileNotFoundError()
+        app['versions'] = versions
 
         return app
 
