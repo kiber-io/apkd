@@ -28,18 +28,20 @@ for source in args.source:
 
 apps = []
 
-for idx, source in enumerate(sources):
+for source in sources:
     app: dict
     try:
         app = source.search_app(args.package)
     except FileNotFoundError:
-        if idx == len(sources)-1:
-            print(f'{args.package} not found')
         continue
     apps.append({
         'app': app,
         'source': source
     })
+
+if len(apps) == 0:
+    print(f'{args.package} not found')
+    exit(1)
 
 newest_version = None
 for info in apps:
