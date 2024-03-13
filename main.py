@@ -3,13 +3,14 @@ import sys
 
 from apkpure import ApkPure
 from apkcombo import ApkCombo
+from rustore import RuStore
 
 parser = argparse.ArgumentParser('apkd')
 parser.add_argument('--package', '-p', help='Package name', required=True)
 parser.add_argument('--version', '-v', help='Version code')
 parser.add_argument('--download', '-d', help='Download', action='store_true')
 parser.add_argument('--list-versions', '-lv', help='List available versions', action='store_true')
-parser.add_argument('--source', '-s', help='Source', nargs='+', default=['apkpure', 'apkcombo'], choices=['apkpure', 'apkcombo'])
+parser.add_argument('--source', '-s', help='Source', nargs='+', default=['apkpure', 'apkcombo', 'rustore'], choices=['apkpure', 'apkcombo', 'rustore'])
 
 args = parser.parse_args(sys.argv[1:])
 
@@ -23,6 +24,8 @@ for source in args.source:
             sources.append(ApkPure())
         case 'apkcombo':
             sources.append(ApkCombo())
+        case 'rustore':
+            sources.append(RuStore())
         case _:
             raise TypeError(f'Invalid source: {source}')
 
