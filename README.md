@@ -48,5 +48,5 @@ python main.py -p ru.rostel -d -s rustore
 ```
 To download certain version:
 ```shell
-python main.py -p ru.rostel -d -v 5979
+python main.py -p ru.rostel -d -vc 5979
 ```
