@@ -6,6 +6,7 @@ from sources.apkcombo import ApkCombo
 from sources.apkpure import ApkPure
 from sources.rustore import RuStore
 from sources.rumarket import RuMarket
+from sources.fdroid import FDroid
 from sources.base import App, AppNotFoundError, AppVersion, BaseSource
 
 parser = argparse.ArgumentParser('apkd')
@@ -15,7 +16,7 @@ parser.add_argument('--download', '-d', help='Download', action='store_true')
 parser.add_argument('--list-versions', '-lv',
                     help='List available versions', action='store_true')
 parser.add_argument('--source', '-s', help='Source', nargs='+', default=[
-                    'apkpure', 'apkcombo', 'rustore', 'rumarket'], choices=['apkpure', 'apkcombo', 'rustore', 'rumarket'])
+                    'apkpure', 'apkcombo', 'rustore', 'rumarket', 'fdroid'], choices=['apkpure', 'apkcombo', 'rustore', 'rumarket', 'fdroid'])
 
 args = parser.parse_args(sys.argv[1:])
 
@@ -39,6 +40,8 @@ for source_name in args.source:
             sources.append(RuStore())
         case 'rumarket':
             sources.append(RuMarket())
+        case 'fdroid':
+            sources.append(FDroid())
         case _:
             raise TypeError(f'Invalid source: {source_name}')
 

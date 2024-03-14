@@ -11,6 +11,7 @@ APK Downloader is a tool that allows you to easily download APK files from popul
 - [ApkCombo](https://apkcombo.com/)
 - [RuStore](https://rustore.ru/)
 - [RuMarket](https://ruplay.market/)
+- [F-Droid](https://f-droid.org/)
 
 ## Features
 
