@@ -5,7 +5,7 @@ from typing import Optional
 from sources.apkcombo import ApkCombo
 from sources.apkpure import ApkPure
 from sources.rustore import RuStore
-# from sources.rumarket import RuMarket
+from sources.rumarket import RuMarket
 from sources.base import App, AppNotFoundError, AppVersion, BaseSource
 
 parser = argparse.ArgumentParser('apkd')
@@ -37,8 +37,8 @@ for source_name in args.source:
             sources.append(ApkCombo())
         case 'rustore':
             sources.append(RuStore())
-        # case 'rumarket':
-        #     sources.append(RuMarket())
+        case 'rumarket':
+            sources.append(RuMarket())
         case _:
             raise TypeError(f'Invalid source: {source_name}')
 
