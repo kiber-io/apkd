@@ -4,10 +4,10 @@ from typing import Optional
 
 from sources.apkcombo import ApkCombo
 from sources.apkpure import ApkPure
-from sources.rustore import RuStore
-from sources.rumarket import RuMarket
-from sources.fdroid import FDroid
 from sources.base import App, AppNotFoundError, AppVersion, BaseSource
+from sources.fdroid import FDroid
+from sources.rumarket import RuMarket
+from sources.rustore import RuStore
 
 parser = argparse.ArgumentParser('apkd')
 parser.add_argument('--package', '-p', help='Package name', required=True)
@@ -102,4 +102,4 @@ elif args.download:
     else:
         print(
             f'Downloading "{args.package}" ({newest_version.code}) from {newest_version.source.name}')
-        file = newest_version.source.download_app(args.package, newest_version)
+        newest_version.source.download_app(args.package, newest_version)
