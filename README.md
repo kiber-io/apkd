@@ -23,20 +23,11 @@ APK Downloader is a tool that allows you to easily download APK files from popul
 - ???
 
 ## Installation
+```shell
+pip install git+https://github.com/kiber-io/apkd
+```
 
-1. Clone the repository:
-
-    ```shell
-    git clone https://github.com/your-username/apk-downloader.git
-    ```
-
-2. Run command:
-
-    ```shell
-    pip install .
-    ```
-
-3. Use command apkd from anywhere
+... and use command "apkd" anywhere!
 
 ## Usage
 
