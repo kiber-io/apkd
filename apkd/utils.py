@@ -6,12 +6,14 @@ import requests
 
 class BaseSource:
     name: str
+    headers: dict
 
     def get_app_info(self, pkg: str) -> 'App':
         return App(pkg, self)
 
-    def download_app(self, pkg: str, version: 'AppVersion') -> str:
-        raise NotImplementedError()
+    def download_app(self, pkg: str, version: 'AppVersion', output_file: Optional[str] = None):
+        filename = output_file or f'{pkg}_{version.code}.apk'
+        self.download_file(version.download_link, self.headers, filename, version.size)
 
     def download_file(self, url: str, headers: dict, filename: str, file_size: int):
         with requests.get(url, headers=headers, stream=True) as r:

@@ -4,10 +4,10 @@ from uuid import uuid4
 import requests
 from user_agent import generate_user_agent
 
-from sources.base import App, AppNotFoundError, AppVersion, BaseSource
+from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
 
 
-class RuMarket(BaseSource):
+class Source(BaseSource):
     headers: dict
 
     def __init__(self) -> None:
@@ -41,9 +41,3 @@ class RuMarket(BaseSource):
         app.set_versions(
             [AppVersion(download_url, version_name, version_code, file_size, self, update_date)])
         return app
-
-    def download_app(self, pkg: str, version: AppVersion) -> str:
-        filename = f'{pkg}_{version.code}.apk'
-        self.download_file(version.download_link,
-                           self.headers, filename, version.size)
-        return filename

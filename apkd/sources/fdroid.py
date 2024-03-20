@@ -5,10 +5,10 @@ import requests
 from user_agent import generate_user_agent
 from bs4 import BeautifulSoup, Tag
 
-from sources.base import App, AppNotFoundError, AppVersion, BaseSource
+from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
 
 
-class FDroid(BaseSource):
+class Source(BaseSource):
     headers: dict
 
     def __init__(self) -> None:
@@ -52,9 +52,3 @@ class FDroid(BaseSource):
 
         app.set_versions(versions)
         return app
-
-    def download_app(self, pkg: str, version: AppVersion) -> str:
-        filename = f'{pkg}_{version.code}.apk'
-        self.download_file(version.download_link,
-                           self.headers, filename, version.size)
-        return filename

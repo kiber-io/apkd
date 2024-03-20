@@ -5,10 +5,10 @@ import requests
 from bs4 import BeautifulSoup, Tag
 from user_agent import generate_user_agent
 
-from sources.base import App, AppNotFoundError, AppVersion, BaseSource
+from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
 
 
-class ApkPure(BaseSource):
+class Source(BaseSource):
     headers: dict
 
     def __init__(self) -> None:
@@ -73,9 +73,3 @@ class ApkPure(BaseSource):
         app.set_versions(versions)
 
         return app
-
-    def download_app(self, pkg: str, version: AppVersion) -> str:
-        filename = f'{pkg}_{version.code}.apk'
-        self.download_file(version.download_link,
-                           self.headers, filename, version.size)
-        return filename

@@ -1,4 +1,6 @@
 .vscode/
 .env/
 __pycache__/
-*.apk
+*.egg-info/
+build/
+test.py
