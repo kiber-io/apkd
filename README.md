@@ -12,6 +12,7 @@ APK Downloader is a tool that allows you to easily download APK files from popul
 - [RuStore](https://rustore.ru/)
 - [RuMarket](https://ruplay.market/)
 - [F-Droid](https://f-droid.org/)
+- [AppGallery](https://appgallery.huawei.com/) (in progress)
 
 ## Features
 
@@ -29,27 +30,29 @@ APK Downloader is a tool that allows you to easily download APK files from popul
     git clone https://github.com/your-username/apk-downloader.git
     ```
 
-2. Install the required dependencies:
+2. Run command:
 
     ```shell
-    pip install -r requirements.txt
+    pip install .
     ```
+
+3. Use command apkd from anywhere
 
 ## Usage
 
 To download an APK file, run the following command:
 ```shell
-python main.py -p ru.rostel -d
+apkd -p ru.rostel -d
 ```
 To list available versions:
 ```shell
-python main.py -p ru.rostel -lv
+apkd -p ru.rostel -lv
 ```
 To choose source:
 ```shell
-python main.py -p ru.rostel -d -s rustore
+apkd -p ru.rostel -d -s rustore
 ```
 To download certain version:
 ```shell
-python main.py -p ru.rostel -d -vc 5979
+apkd -p ru.rostel -d -vc 5979
 ```
