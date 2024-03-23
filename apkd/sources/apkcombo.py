@@ -45,8 +45,8 @@ class Source(BaseSource):
             file_size = block.find(
                 'span', class_='spec').get_text().strip().split(' ')[0]
             file_size = int(file_size) * 1024 * 1024
-            version = AppVersion(f'{download_url}&{checkin}', version_name, int(
-                version_code), file_size, self)
+            version = AppVersion(version_name, int(
+                version_code), file_size, self, download_link=f'{download_url}&{checkin}')
             versions.append(version)
 
         if len(versions) == 0:

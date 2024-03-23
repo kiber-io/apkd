@@ -84,7 +84,7 @@ class Source(BaseSource):
         download_url = data['downurl']
 
         app.set_versions(
-            [AppVersion(download_url, version_name, version_code, file_size, self)])
+            [AppVersion(version_name, version_code, file_size, self, download_link=download_url)])
         return app
 
     def generate_device_id(self) -> str:

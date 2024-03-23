@@ -39,5 +39,5 @@ class Source(BaseSource):
         file_size = json_code['data']['latestApk']['size']
 
         app.set_versions(
-            [AppVersion(download_url, version_name, version_code, file_size, self, update_date)])
+            [AppVersion(version_name, version_code, file_size, self, update_date, download_url)])
         return app

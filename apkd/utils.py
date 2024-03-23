@@ -13,13 +13,13 @@ class BaseSource:
 
     def download_app(self, pkg: str, version: 'AppVersion', output_file: Optional[str] = None):
         filename = output_file or f'{pkg}_{version.code}.apk'
-        self.download_file(version.download_link, self.headers, filename, version.size)
+        progress_text = f'{version.source.name}: {pkg} ({version.code}) '
+        self.download_file(self.get_download_link(pkg, version), self.headers, filename, version.size, progress_text)
 
-    def download_file(self, url: str, headers: dict, filename: str, file_size: int):
+    def download_file(self, url: str, headers: dict, filename: str, file_size: int, progress_text: str):
         with requests.get(url, headers=headers, stream=True) as r:
             bar = progressbar.ProgressBar(max_value=file_size, term_width=100, widgets=[
-                filename,
-                ' ',
+                progress_text,
                 progressbar.Bar(),
                 ' ',
                 progressbar.widgets.FileTransferSpeed(),
@@ -34,16 +34,21 @@ class BaseSource:
                         continue
             bar.finish()
 
+    def get_download_link(self, pkg: str, version: 'AppVersion') -> str:
+        if version.download_link is None:
+            raise TypeError(f'Download link missed for version "{version.code}"')
+
+        return version.download_link
 
 class AppVersion:
-    download_link: str
+    download_link: Optional[str] = None
     name: str
     code: int
     update_date: str
     size: int
     source: BaseSource
 
-    def __init__(self, download_link: str, name: str, code: int, size: int, source: BaseSource, update_date: Optional[str] = None) -> None:
+    def __init__(self, name: str, code: int, size: int, source: BaseSource, update_date: Optional[str] = None, download_link: Optional[str] = None) -> None:
         self.update_date = update_date or '--.--.----'
         self.source = source
         self.download_link = download_link

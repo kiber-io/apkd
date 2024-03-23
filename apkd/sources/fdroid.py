@@ -48,7 +48,7 @@ class Source(BaseSource):
             file_size_mb = file_size_block.get_text().replace('MiB', '').strip()
             file_size = int(float(file_size_mb) * 1024 * 1024)
 
-            versions.append(AppVersion(download_link, version_name, int(version_code), file_size, self, update_date))
+            versions.append(AppVersion(version_name, int(version_code), file_size, self, update_date, download_link))
 
         app.set_versions(versions)
         return app

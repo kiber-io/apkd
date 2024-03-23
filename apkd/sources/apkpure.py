@@ -64,7 +64,7 @@ class Source(BaseSource):
             download_link = f'https://d.apkpure.com/b/APK/{pkg}?versionCode={version_code}'
 
             version: AppVersion = AppVersion(
-                download_link, version_name, version_code, file_size, self, update_date)
+                version_name, version_code, file_size, self, update_date, download_link)
             versions.append(version)
 
         if len(versions) == 0:
