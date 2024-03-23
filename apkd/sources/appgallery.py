@@ -69,8 +69,10 @@ class Source(BaseSource):
         for layout_data in json_code['layoutData']:
             if data is not None:
                 break
+            # apps direct from appgallery has appid from 10 characters - "C" + 9 digits
+            # apps from third-party services has appid from 19 characters - "C" + 18 digits
             for data_list in layout_data['dataList']:
-                if 'package' in data_list and data_list['package'] == pkg:
+                if 'appid' in data_list and len(data_list['appid']) == 10 and 'package' in data_list and data_list['package'] == pkg:
                     data = data_list
                     break
 
