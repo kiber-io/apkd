@@ -13,6 +13,7 @@ APK Downloader is a tool that allows you to easily download APK files from popul
 - [RuMarket](https://ruplay.market/)
 - [F-Droid](https://f-droid.org/)
 - [AppGallery](https://appgallery.huawei.com/)
+- [Aptoide](https://aptoide.com/)
 
 ## Features
 
