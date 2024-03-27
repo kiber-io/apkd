@@ -28,6 +28,7 @@ APK Downloader is a tool that allows you to easily download APK files from popul
 - Automatic search for all sources
 - Simple and intuitive command-line interface
 - Modularity and extensibility. PR is welcome
+- Active support and development
 - ???
 
 ## Installation
@@ -55,3 +56,11 @@ To download certain version:
 ```shell
 apkd -p com.twitter.android -d -vc 310260000
 ```
+
+## Dependencies
+- [beautifulsoup4](https://pypi.org/project/beautifulsoup4/) - for easy parsing of html pages of some stores
+- [progressbar2](https://pypi.org/project/progressbar2/) - to visually display the download process
+- [requests](https://pypi.org/project/requests/) - for all network requests
+- [user-agent](https://pypi.org/project/user-agent/) - to hide and randomize the user-agent
+- [prettytable](https://pypi.org/project/prettytable/) - for a beautiful display of the list of versions in the table
+- [pypasser](https://pypi.org/project/PyPasser/) - to bypass ReCaptcha at the ApkCombo
