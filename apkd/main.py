@@ -155,8 +155,7 @@ def cli():
         print('')
 
         for app in apps:
-            print(
-                f'Available versions for "{args.package}" from {app.source.name}:')
+            print(app.source.name)
             table = PrettyTable(field_names=['Version name', 'Version code', 'Update date', 'Size'], align='l')
             version: AppVersion
             for version in app.get_versions():
