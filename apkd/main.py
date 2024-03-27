@@ -145,7 +145,11 @@ def cli():
         apkd.add_source(source_name, source)
 
     if args.list_versions:
-        apps, newest_version = apkd.get_app_info(args.package)
+        try:
+            apps, newest_version = apkd.get_app_info(args.package)
+        except AppNotFoundError as e:
+            print(e)
+            exit(1)
         print(
             f'Newest version: {newest_version.name} ({newest_version.code}) from {newest_version.source.name}')
         print('')
