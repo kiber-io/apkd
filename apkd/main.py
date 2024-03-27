@@ -5,6 +5,7 @@ from importlib import util as importutil
 from typing import Optional
 
 from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
+from prettytable import PrettyTable
 
 
 class Utils:
@@ -152,11 +153,12 @@ def cli():
         for app in apps:
             print(
                 f'Available versions for "{args.package}" from {app.source.name}:')
+            table = PrettyTable(field_names=['Version name', 'Version code', 'Update date', 'Size'], align='l')
             version: AppVersion
             for version in app.get_versions():
                 size_mb = version.size / (1024 * 1024)
-                print(
-                    f'    {version.name} ({version.code}) | {version.update_date} | {size_mb:.2f} MB')
+                table.add_row([version.name, version.code, version.update_date, f'{size_mb:.2f} MB'])
+            print(table)
             print('')
 
     if args.download:
