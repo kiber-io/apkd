@@ -11,7 +11,8 @@ setup(
         'progressbar2==4.4.2',
         'PyPasser==0.0.5',
         'requests==2.31.0',
-        'user-agent==0.1.10'
+        'user-agent==0.1.10',
+        'prettytable==3.10.0',
     ],
     keywords=['apk downloader', 'apk download', 'android downloader', 'app downloader', 'app download'],
     description='APK downloader from few sources',
