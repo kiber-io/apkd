@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from pypasser import reCaptchaV3
+from apkd.libs.pypasser import reCaptchaV3
 from user_agent import generate_user_agent
 
 from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
