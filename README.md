@@ -2,6 +2,32 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/your-username/apk-downloader/blob/main/LICENSE)
 
+```
+> apkd -p com.twitter.android -lv
+Newest version: 10.34.0-release.0 (310340000) from ApkCombo
+
+ApkCombo
++-------------------+--------------+-------------+-----------+
+| Version name      | Version code | Update date | Size      |
++-------------------+--------------+-------------+-----------+
+| 10.34.0-release.0 | 310340000    | N/A         | 116.00 MB |
++-------------------+--------------+-------------+-----------+
+
+ApkPure
++-------------------+--------------+-------------+-----------+
+| Version name      | Version code | Update date | Size      |
++-------------------+--------------+-------------+-----------+
+| 10.34.0-release.0 | 310340000    | 27.03.2024  | 115.82 MB |
+| 10.33.0-release.0 | 310330000    | 20.03.2024  | 115.82 MB |
+| 10.32.0-release.1 | 310320001    | 13.03.2024  | 115.76 MB |
++-------------------+--------------+-------------+-----------+
+```
+
+```
+> apkd -p com.twitter.android -d -s apkcombo
+ApkCombo: com.twitter.android (310340000) |####################################        |  13.5 MiB/s
+```
+
 ## Description
 
 APK Downloader is a tool that allows you to easily download APK files from popular app stores. With this tool, you can quickly obtain APK files for various Android applications directly to your local machine.
