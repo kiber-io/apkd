@@ -157,7 +157,7 @@ def cli():
             version: AppVersion
             for version in app.get_versions():
                 size_mb = version.size / (1024 * 1024)
-                table.add_row([version.name, version.code, version.update_date, f'{size_mb:.2f} MB'])
+                table.add_row([version.name, version.code, version.update_date or 'N/A', f'{size_mb:.2f} MB'])
             print(table)
             print('')
 

@@ -44,12 +44,13 @@ class AppVersion:
     download_link: Optional[str] = None
     name: str
     code: int
-    update_date: str
+    update_date: Optional[str] = None
     size: int
     source: BaseSource
 
     def __init__(self, name: str, code: int, size: int, source: BaseSource, update_date: Optional[str] = None, download_link: Optional[str] = None) -> None:
-        self.update_date = update_date or '--.--.----'
+        if isinstance(update_date, str):
+            self.update_date = update_date
         self.source = source
         self.download_link = download_link
         self.name = name
