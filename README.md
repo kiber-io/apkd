@@ -40,10 +40,9 @@ APK Downloader is a tool that allows you to easily download APK files from popul
 | Store                                       | Multiple versions  |    Update date     |
 |---------------------------------------------|:------------------:|:------------------:|
 | [F-Droid](https://f-droid.org)              | :heavy_check_mark: | :heavy_check_mark: |
-| [Aptoide](https://aptoide.com)              | :heavy_check_mark: | :heavy_check_mark: |
-| [AppGallery](https://appgallery.huawei.com) |        :x:         |        :x:         |
 | [ApkPure](https://apkpure.com)              | :heavy_check_mark: | :heavy_check_mark: |
 | [ApkCombo](https://apkcombo.com)            | :heavy_check_mark: |        :x:         |
+| [AppGallery](https://appgallery.huawei.com) |        :x:         |        :x:         |
 | [RuStore](https://rustore.ru)               |        :x:         | :heavy_check_mark: |
 | [RuMarket](https://ruplay.market)           |        :x:         | :heavy_check_mark: |
 | [NashStore](https://nashstore.ru)           |        :x:         | :heavy_check_mark: |
