@@ -72,8 +72,12 @@ cd apkd
 docker build --tag apkd:1.0 .
 ```
 3. Run
-```bash
-docker run --rm -v ${PWD}:/usr/src/app apkd:1.0 -h
+```shell
+# on linux
+docker run --rm -v ${PWD}:/usr/src/app apkd:1.0 --help
+
+# on windows
+docker run --rm -v "%cd%":/usr/src/app apkd:1.0 --help
 ```
 
 ## Usage
