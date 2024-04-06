@@ -63,6 +63,19 @@ pip install git+https://github.com/kiber-io/apkd
 
 ... and use command "apkd" anywhere!
 
+### Docker
+1. Install Docker (https://docs.docker.com/get-docker/).
+2. Build Docker image
+```bash
+git clone https://github.com/kiber-io/apkd.git
+cd apkd
+docker build --tag apkd:1.0 .
+```
+3. Run
+```bash
+docker run --rm -v ${PWD}:/usr/src/app apkd:1.0 -h
+```
+
 ## Usage
 
 To download an APK file, run the following command:
