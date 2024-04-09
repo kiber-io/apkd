@@ -46,6 +46,9 @@ class Source(BaseSource):
         versions: list[AppVersion] = []
         for block in soup.find_all('a', class_='ver_download_link'):
             block = cast(Tag, block)
+            apkid: str = block.attrs['data-dt-apkid']
+            if not apkid.startswith('b/APK'):
+                continue
             version_name = block.get('data-dt-version')
             version_code = block.get('data-dt-versioncode')
             file_size = block.get('data-dt-filesize')
