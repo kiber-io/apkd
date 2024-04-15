@@ -56,7 +56,7 @@ class Source(BaseSource):
         version = app_json['release']['version_name']
         update_date = app_json['release']['create_at']
         update_date = datetime.strptime(
-            update_date, '%Y-%m-%dT%H:%M:%S.%f%z').strftime('%m.%d.%Y')
+            update_date, '%Y-%m-%dT%H:%M:%S%z').strftime('%m.%d.%Y')
 
         download_url = app_json['release']['install_path']
         file_size = app_json['size']
