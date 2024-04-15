@@ -55,8 +55,14 @@ class Source(BaseSource):
         version_code = app_json['release']['version_code']
         version = app_json['release']['version_name']
         update_date = app_json['release']['create_at']
-        update_date = datetime.strptime(
-            update_date, '%Y-%m-%dT%H:%M:%S%z').strftime('%m.%d.%Y')
+        # nashstore has two date types (wtf?!)
+        datetime_date: datetime
+        try:
+            datetime_date = datetime.strptime(update_date, '%Y-%m-%dT%H:%M:%S%z')
+        except ValueError:
+            datetime_date = datetime.strptime(update_date, '%Y-%m-%dT%H:%M:%S.%f%z')
+
+        update_date = datetime_date.strftime('%m.%d.%Y')
 
         download_url = app_json['release']['install_path']
         file_size = app_json['size']
