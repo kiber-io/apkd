@@ -44,7 +44,7 @@ class Source(BaseSource):
                 'span', class_='vercode').get_text().strip()[1:-1]
             file_size = block.find(
                 'span', class_='spec').get_text().strip().split(' ')[0]
-            file_size = int(file_size) * 1024 * 1024
+            file_size = int(float(file_size)) * 1024 * 1024
             version = AppVersion(version_name, int(
                 version_code), file_size, self, download_link=f'{download_url}&{checkin}')
             versions.append(version)
