@@ -2,6 +2,9 @@ from typing import Optional
 
 import progressbar
 import requests
+import logging
+
+import requests.adapters
 
 
 class BaseSource:
@@ -17,7 +20,7 @@ class BaseSource:
         self.download_file(self.get_download_link(pkg, version), self.headers, filename, version.size, progress_text)
 
     def download_file(self, url: str, headers: dict, filename: str, file_size: int, progress_text: str):
-        with requests.get(url, headers=headers, stream=True) as r:
+        with Request.get(url, headers=headers, stream=True) as r:
             bar = progressbar.ProgressBar(max_value=file_size, term_width=100, widgets=[
                 progress_text,
                 progressbar.Bar(),
@@ -57,7 +60,6 @@ class AppVersion:
         self.code = code
         self.size = size
 
-
 class App:
     __versions: list[AppVersion]
     package: str
@@ -84,3 +86,27 @@ class App:
 class AppNotFoundError(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
+
+class Request:
+    @staticmethod
+    def get(url, params=None, **kwargs):
+        session = Request.session()
+        return session.request('get', url, params, **kwargs)
+
+    @staticmethod
+    def post(url, data=None, json=None, **kwargs):
+        session = Request.session()
+        return session.request('post', url, data=data, json=json, **kwargs)
+
+    @staticmethod
+    def session():
+        middleware = RequestsMiddleware()
+        session = requests.Session()
+        session.mount('http://', middleware)
+        session.mount('https://', middleware)
+        return session
+
+class RequestsMiddleware(requests.adapters.HTTPAdapter):
+    def send(self, request: requests.PreparedRequest, stream: bool = False, timeout: None | float | tuple[float, float] | tuple[float, None] = None, verify: bool | str = True, cert: None | bytes | str | tuple[bytes | str, bytes | str] = None, proxies = None) -> requests.Response:
+        response = super().send(request, stream, timeout, verify, cert, proxies)
+        return response

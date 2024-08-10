@@ -1,9 +1,7 @@
 import json
 from datetime import datetime
 
-import requests
-
-from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
+from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource, Request
 import string
 import random
 
@@ -40,7 +38,7 @@ class Source(BaseSource):
 
     def get_app_info(self, pkg: str) -> App:
         app: App = super().get_app_info(pkg)
-        response = requests.post(
+        response = Request.post(
             'https://store.nashstore.ru/api/mobile/v1/profile/updates', headers=self.headers, data=json.dumps({
                 "apps": {
                     f"{pkg}": {

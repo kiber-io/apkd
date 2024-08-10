@@ -1,10 +1,9 @@
 from datetime import datetime
 from uuid import uuid4
 
-import requests
 from user_agent import generate_user_agent
 
-from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
+from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource, Request
 
 import string
 import random
@@ -35,7 +34,7 @@ class Source(BaseSource):
 
     def get_app_info(self, pkg: str) -> App:
         app: App = super().get_app_info(pkg)
-        response = requests.post('https://store-drru.hispace.dbankcloud.ru/hwmarket/api/clientApi', headers=self.headers, data=urlencode({
+        response = Request.post('https://store-drru.hispace.dbankcloud.ru/hwmarket/api/clientApi', headers=self.headers, data=urlencode({
             'callWay': '2',
             'clientPackage': 'com.huawei.appmarket',
             'code': '0200',

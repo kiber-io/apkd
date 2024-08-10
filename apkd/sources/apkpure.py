@@ -1,11 +1,10 @@
 import datetime
 from typing import cast
 
-import requests
 from bs4 import BeautifulSoup, Tag
 from user_agent import generate_user_agent
 
-from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
+from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource, Request
 
 
 class Source(BaseSource):
@@ -24,7 +23,7 @@ class Source(BaseSource):
 
     def get_app_info(self, pkg: str) -> App:
         app: App = super().get_app_info(pkg)
-        response = requests.get(
+        response = Request.get(
             f'https://apkpure.com/search?q={pkg}', headers=self.headers)
         html_code = response.text
         soup = BeautifulSoup(html_code, features='html.parser')
@@ -40,7 +39,7 @@ class Source(BaseSource):
         url = url_block.get('href')
         url = cast(str, url)
 
-        response = requests.get(f'{url}/versions', headers=self.headers)
+        response = Request.get(f'{url}/versions', headers=self.headers)
         html_code = response.text
         soup = BeautifulSoup(html_code, features='html.parser')
         versions: list[AppVersion] = []

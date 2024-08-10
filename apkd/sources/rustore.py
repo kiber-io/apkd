@@ -1,9 +1,8 @@
 from datetime import datetime
 
-import requests
 from user_agent import generate_user_agent
 
-from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
+from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource, Request
 
 
 class Source(BaseSource):
@@ -27,7 +26,7 @@ class Source(BaseSource):
 
     def get_app_info(self, pkg: str) -> App:
         app: App = super().get_app_info(pkg)
-        response = requests.get(
+        response = Request.get(
             f'https://backapi.rustore.ru/applicationData/overallInfo/{pkg}', headers=self.headers)
         json_code = response.json()
         if 'code' not in json_code or json_code['code'] != 'OK':
@@ -39,7 +38,7 @@ class Source(BaseSource):
             update_date, '%Y-%m-%dT%H:%M:%S.%f%z').strftime('%m.%d.%Y')
 
         app_id = json_code['body']['appId']
-        response = requests.post('https://backapi.rustore.ru/applicationData/v2/download-link', json={
+        response = Request.post('https://backapi.rustore.ru/applicationData/v2/download-link', json={
             "appId": app_id,
             "firstInstall": True,
             "mobileServices": ["GMS"],

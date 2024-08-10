@@ -1,9 +1,9 @@
-import requests
+
 from bs4 import BeautifulSoup
 from apkd.libs.pypasser import reCaptchaV3
 from user_agent import generate_user_agent
 
-from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
+from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource, Request
 
 
 class Source(BaseSource):
@@ -25,10 +25,10 @@ class Source(BaseSource):
 
     def get_app_info(self, pkg: str) -> App:
         app: App = super().get_app_info(pkg)
-        response = requests.post(
+        response = Request.post(
             'https://apkcombo.com/checkin', headers=self.headers)
         checkin = response.text
-        response = requests.get(
+        response = Request.get(
             f'https://apkcombo.com/ru/downloader/?package={pkg}&ajax=1', headers=self.headers)
         html_code = response.text
         soup = BeautifulSoup(html_code, features='html.parser')

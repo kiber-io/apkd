@@ -1,10 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 
-import requests
-from user_agent import generate_user_agent
-
-from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
+from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource, Request
 
 
 class Source(BaseSource):
@@ -25,7 +22,7 @@ class Source(BaseSource):
 
     def get_app_info(self, pkg: str) -> App:
         app: App = super().get_app_info(pkg)
-        response = requests.get(
+        response = Request.get(
             f'https://store-api.ruplay.market/api/v1/app/getApp/{pkg}', headers=self.headers)
         if response.status_code == 404:
             raise AppNotFoundError()
