@@ -154,24 +154,20 @@ def cli():
         apkd.add_source(source_name, source)
 
     if args.list_versions:
+        table = PrettyTable(field_names=['Package name', 'Source', 'Version name', 'Version code', 'Update date', 'Size'], align='l')
         try:
-            apps, newest_version = apkd.get_app_info(args.package)
-        except AppNotFoundError as e:
-            print(e)
-            exit(1)
-        print(
-            f'Newest version: {newest_version.name} ({newest_version.code}) from {newest_version.source.name}')
-        print('')
+            apps, _ = apkd.get_app_info(args.package)
+        except AppNotFoundError:
+            not_available = 'N/A'
+            table.add_row([args.package, not_available, not_available, not_available, not_available, not_available])
+            apps = []
 
         for app in apps:
-            print(app.source.name)
-            table = PrettyTable(field_names=['Version name', 'Version code', 'Update date', 'Size'], align='l')
             version: AppVersion
             for version in app.get_versions():
                 size_mb = version.size / (1024 * 1024)
-                table.add_row([version.name, version.code, version.update_date or 'N/A', f'{size_mb:.2f} MB'])
-            print(table)
-            print('')
+                table.add_row([app.package, version.source.name, version.name, version.code, version.update_date or 'N/A', f'{size_mb:.2f} MB'])
+        print(table)
 
     if args.download:
         apkd.download_app(args.package, args.version_code if args.version_code is not None else -1, args.output)
