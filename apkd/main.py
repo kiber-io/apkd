@@ -4,8 +4,9 @@ import sys
 from importlib import util as importutil
 from typing import Optional
 
-from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource
+from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource, get_logger
 from prettytable import PrettyTable
+import logging
 
 
 class Utils:
@@ -129,7 +130,15 @@ def cli():
     parser.add_argument('--list-versions', '-lv', help='List available versions', action='store_true')
     parser.add_argument('--source', '-s', help='Source', nargs='+', default=sources_names, choices=sources_names)
     parser.add_argument('--output', '-o', help='Output file')
+    parser.add_argument('--verbose', '-v', help='Verbose logging', action='store_true', default=False)
     args = parser.parse_args(sys.argv[1:])
+
+    if args.verbose:
+        logger = get_logger()
+        logger.setLevel(logging.DEBUG)
+        logging_handler = logging.StreamHandler()
+        logging_handler.setFormatter(logging.Formatter('%(message)s'))
+        logger.addHandler(logging_handler)
 
     if args.list_versions and args.download:
         parser.error('--list-versions and --download cannot be used together')

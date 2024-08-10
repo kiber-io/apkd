@@ -65,8 +65,7 @@ class Source(BaseSource):
         download_url = app_json['release']['install_path']
         file_size = app_json['size']
 
-        app.set_versions(
-            [AppVersion(version, version_code, file_size, self, update_date, download_url)])
+        app.set_versions([AppVersion(version, version_code, file_size, self, update_date, download_url)])
         return app
 
     def generate_device_id(self) -> str:

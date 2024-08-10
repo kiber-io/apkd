@@ -109,4 +109,8 @@ class Request:
 class RequestsMiddleware(requests.adapters.HTTPAdapter):
     def send(self, request: requests.PreparedRequest, stream: bool = False, timeout: None | float | tuple[float, float] | tuple[float, None] = None, verify: bool | str = True, cert: None | bytes | str | tuple[bytes | str, bytes | str] = None, proxies = None) -> requests.Response:
         response = super().send(request, stream, timeout, verify, cert, proxies)
+        get_logger().debug(f'Request: {request.url}, response code: {response.status_code}')
         return response
+
+def get_logger():
+    return logging.getLogger('apkd')
