@@ -12,7 +12,7 @@ setup(
     url='https://github.com/kiber-io/apkd',
     install_requires=[
         'beautifulsoup4',
-        'progressbar2',
+        'tqdm',
         'requests',
         'user-agent',
         'prettytable',
