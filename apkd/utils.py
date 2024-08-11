@@ -76,9 +76,6 @@ class App:
     def get_versions(self):
         return self.__versions
 
-    def get_version_by_idx(self, idx: int):
-        return self.__versions[idx]
-
     def get_version_by_code(self, code: int):
         return next((v for v in self.__versions if v.code == code))
 

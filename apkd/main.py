@@ -1,12 +1,18 @@
 import argparse
+import logging
 import os
 import sys
+from functools import cmp_to_key
 from importlib import util as importutil
+from queue import Empty as QueueEmpty
+from queue import Queue
+from threading import Lock, Thread
 from typing import Optional
 
-from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource, get_logger
 from prettytable import PrettyTable
-import logging
+
+from apkd.utils import (App, AppNotFoundError, AppVersion, BaseSource,
+                        get_logger)
 
 
 class Utils:
@@ -45,6 +51,16 @@ class Utils:
 
         return sources
 
+    @staticmethod
+    def find_last_version(apps: list[App]) -> AppVersion|None:
+        last_version: AppVersion|None = None
+        for app in apps:
+            if last_version is not None and last_version.code >= app.get_versions()[0].code:
+                continue
+            last_version = app.get_versions()[0]
+
+        return last_version
+
 class Apkd:
     __sources: dict[str, BaseSource]
 
@@ -70,12 +86,10 @@ class Apkd:
         sources = Utils.import_sources()
         self.__sources = sources
 
-    def get_app_info(self, package_name: str) -> tuple[list[App], AppVersion]:
-        apps: list[App] = []
+    def get_app_info(self, package_name: str) -> list[App]:
+        apps: list[App] = list()
 
-        source: BaseSource
         for source in self.__sources.values():
-            app: App
             try:
                 app = source.get_app_info(package_name)
             except AppNotFoundError:
@@ -85,19 +99,10 @@ class Apkd:
         if len(apps) == 0:
             raise AppNotFoundError(f'{package_name} not found')
 
-        newest_version: Optional[AppVersion] = None
-        for app in apps:
-            if newest_version is not None and newest_version.code >= app.get_version_by_idx(0).code:
-                continue
-            newest_version = app.get_version_by_idx(0)
-
-        if newest_version is None:
-            raise AppNotFoundError(f'{package_name} not found')
-
-        return apps, newest_version
+        return apps
 
     def download_app(self, package_name: str, version_code: int = -1, output_file: Optional[str] = None) -> None:
-        apps, newest_version = self.get_app_info(package_name)
+        apps = self.get_app_info(package_name)
         if version_code != -1:
             downloaded = False
             for app in apps:
@@ -111,7 +116,9 @@ class Apkd:
             if not downloaded:
                 raise AppNotFoundError(f'Version {version_code} not found')
         else:
-            newest_version.source.download_app(package_name, newest_version, output_file)
+            last_version = Utils.find_last_version(apps)
+            if last_version is not None:
+                last_version.source.download_app(package_name, last_version, output_file)
 
 class SourceImportError(ImportError):
     pass
@@ -119,12 +126,51 @@ class SourceImportError(ImportError):
 class SourceNotFoundError(FileNotFoundError):
     pass
 
+def download_apps(lock: Lock, apkd: Apkd, queue: Queue, output_file: str, version_code: int = -1):
+    while True:
+        try:
+            pkg = queue.get(block=False)
+        except QueueEmpty:
+            break
+
+        try:
+            apkd.download_app(pkg, version_code, output_file)
+        except Exception:
+            pass
+        queue.task_done()
+
+def list_apps_versions(lock: Lock, apkd: Apkd, queue: Queue, table: PrettyTable):
+    while True:
+        try:
+            pkg = queue.get(block=False)
+        except QueueEmpty:
+            break
+
+        try:
+            apps = apkd.get_app_info(pkg)
+        except Exception:
+            not_available = 'N/A'
+            with lock:
+                table.add_row([pkg, not_available, not_available, not_available, not_available, not_available])
+            queue.task_done()
+            continue
+
+        for app in apps:
+            version: AppVersion
+            for version in app.get_versions():
+                size_mb = version.size / (1024 * 1024)
+                with lock:
+                    table.add_row([app.package, version.source.name, version.name, version.code, version.update_date or 'N/A', f'{size_mb:.2f} MB'])
+
+        queue.task_done()
+
 def cli():
     apkd = Apkd(auto_load_sources=False)
     sources_names = Utils.get_available_sources_names()
 
     parser = argparse.ArgumentParser('apkd')
-    parser.add_argument('--package', '-p', help='Package name', required=True)
+    parser.add_argument('--package', '-p', help='Package name')
+    parser.add_argument('--packages-list', '-l', help='File with package names')
     parser.add_argument('--version-code', '-vc', help='Version code', type=int)
     parser.add_argument('--download', '-d', help='Download', action='store_true')
     parser.add_argument('--list-versions', '-lv', help='List available versions', action='store_true')
@@ -153,25 +199,68 @@ def cli():
     for source_name, source in sources.items():
         apkd.add_source(source_name, source)
 
+    packages: set[str] = set()
+    if args.package:
+        packages.add(args.package)
+    elif args.packages_list:
+        with open(args.packages_list, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    packages.add(line)
+
+    q = Queue()
+    for pkg in packages:
+        q.put(pkg)
+
+    table: PrettyTable|None = None
     if args.list_versions:
-        try:
-            apps, newest_version = apkd.get_app_info(args.package)
-        except AppNotFoundError as e:
-            print(e)
-            exit(1)
-        print(
-            f'Newest version: {newest_version.name} ({newest_version.code}) from {newest_version.source.name}')
-        print('')
+        table = PrettyTable(field_names=['Package', 'Source', 'Version name', 'Version code', 'Update date', 'Size'], align='l')
 
-        for app in apps:
-            print(app.source.name)
-            table = PrettyTable(field_names=['Version name', 'Version code', 'Update date', 'Size'], align='l')
-            version: AppVersion
-            for version in app.get_versions():
-                size_mb = version.size / (1024 * 1024)
-                table.add_row([version.name, version.code, version.update_date or 'N/A', f'{size_mb:.2f} MB'])
-            print(table)
-            print('')
+    lock = Lock()
+    threads = set()
+    threads_count = 3
+    if len(packages) < 3:
+        threads_count = len(packages)
+    for _ in range(threads_count):
+        arguments = [lock, apkd, q]
+        target = None
+        if args.download:
+            target = download_apps
+            arguments.append(args.output)
+            if args.version_code:
+                arguments.append(args.version_code)
+        elif args.list_versions:
+            arguments.append(table)
+            target = list_apps_versions
+        thread = Thread(target=target, args=tuple(arguments))
+        thread.start()
+        threads.add(thread)
 
-    if args.download:
-        apkd.download_app(args.package, args.version_code if args.version_code is not None else -1, args.output)
+    q.join()
+    for thread in threads:
+        thread.join()
+
+    if args.list_versions:
+        assert table is not None
+        def sort(row1, row2):
+            if row1[3] == 'N/A':
+                return 1
+            if row2[3] == 'N/A':
+                return -1
+            if row1[0] > row2[0]:
+                return 1
+            elif row1[0] < row2[0]:
+                return -1
+            else:
+                return row2[3] - row1[3]
+        table._rows.sort(key=cmp_to_key(sort))
+        pkg = None
+        for idx, row in enumerate(table.rows):
+            if pkg is None:
+                pkg = row[0]
+
+            if pkg != row[0]:
+                table._dividers[idx-1] = True
+                pkg = row[0]
+        print(table)
