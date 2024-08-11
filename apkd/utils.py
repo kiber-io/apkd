@@ -1,11 +1,10 @@
 from typing import Optional
 
-import progressbar
 import requests
 import logging
 
 import requests.adapters
-
+from typing import Callable
 
 class BaseSource:
     name: str
@@ -14,28 +13,30 @@ class BaseSource:
     def get_app_info(self, pkg: str) -> 'App':
         return App(pkg, self)
 
-    def download_app(self, pkg: str, version: 'AppVersion', output_file: Optional[str] = None):
+    def download_app(self, pkg: str, version: 'AppVersion', output_file: Optional[str] = None, on_download_start: Callable[['AppVersion', int], None]|None = None, on_chunk_received: Callable[[int], None]|None = None, on_download_end: Callable[[int], None]|None = None):
         filename = output_file or f'{pkg}_{version.code}.apk'
-        progress_text = f'{version.source.name}: {pkg} ({version.code}) '
-        self.download_file(self.get_download_link(pkg, version), self.headers, filename, version.size, progress_text)
+        def mitm_on_download_start(file_size: int):
+            if on_download_start is None:
+                return
+            on_download_start(version, file_size)
+        self.download_file(self.get_download_link(pkg, version), self.headers, filename, version.size, mitm_on_download_start, on_chunk_received, on_download_end)
 
-    def download_file(self, url: str, headers: dict, filename: str, file_size: int, progress_text: str):
+    def download_file(self, url: str, headers: dict, filename: str, file_size: int, on_download_start: Callable[[int], None]|None = None, on_chunk_received: Callable[[int], None]|None = None, on_download_end: Callable[[int], None]|None = None):
         with Request.get(url, headers=headers, stream=True) as r:
-            bar = progressbar.ProgressBar(max_value=file_size, term_width=100, widgets=[
-                progress_text,
-                progressbar.Bar(),
-                ' ',
-                progressbar.widgets.FileTransferSpeed(),
-            ])
+            if 'Content-Length' in r.headers:
+                file_size = int(r.headers['Content-Length'])
+
+            if on_download_start is not None:
+                on_download_start(file_size)
+
             r.raise_for_status()
             with open(filename, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
-                    try:
-                        bar.update(f.tell())
-                    except ValueError:
-                        continue
-            bar.finish()
+                    if on_chunk_received is not None:
+                        on_chunk_received(f.tell())
+                if on_download_end is not None:
+                    on_download_end(f.tell())
 
     def get_download_link(self, pkg: str, version: 'AppVersion') -> str:
         if version.download_link is None:

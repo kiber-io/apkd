@@ -13,6 +13,8 @@ from prettytable import PrettyTable
 
 from apkd.utils import (App, AppNotFoundError, AppVersion, BaseSource,
                         get_logger)
+from typing import Callable
+from tqdm import tqdm
 
 
 class Utils:
@@ -101,14 +103,14 @@ class Apkd:
 
         return apps
 
-    def download_app(self, package_name: str, version_code: int = -1, output_file: Optional[str] = None) -> None:
+    def download_app(self, package_name: str, version_code: int = -1, output_file: Optional[str] = None, on_download_start: Callable[[AppVersion, int], None]|None = None, on_chunk_received: Callable[[int], None]|None = None, on_download_end: Callable[[int], None]|None = None) -> None:
         apps = self.get_app_info(package_name)
         if version_code != -1:
             downloaded = False
             for app in apps:
                 try:
                     version = app.get_version_by_code(version_code)
-                    version.source.download_app(app.package, version, output_file)
+                    version.source.download_app(app.package, version, output_file, on_download_start, on_chunk_received, on_download_end)
                     downloaded = True
                     break
                 except StopIteration:
@@ -118,7 +120,7 @@ class Apkd:
         else:
             last_version = Utils.find_last_version(apps)
             if last_version is not None:
-                last_version.source.download_app(package_name, last_version, output_file)
+                last_version.source.download_app(package_name, last_version, output_file, on_download_start, on_chunk_received, on_download_end)
 
 class SourceImportError(ImportError):
     pass
@@ -126,15 +128,31 @@ class SourceImportError(ImportError):
 class SourceNotFoundError(FileNotFoundError):
     pass
 
-def download_apps(lock: Lock, apkd: Apkd, queue: Queue, output_file: str, version_code: int = -1):
+def download_apps(apkd: Apkd, queue: Queue, output_file: str, version_code: int = -1):
     while True:
         try:
             pkg = queue.get(block=False)
         except QueueEmpty:
             break
 
+        bar: tqdm
+        def on_download_start(version: AppVersion, file_size: int, pkg=pkg):
+            nonlocal bar
+            bar = tqdm(total=file_size, unit='B', unit_scale=True, desc=f'{pkg} ver. {version.code} ({version.source.name})', bar_format='{l_bar}{bar}{r_bar}')
+
+        def on_chunk_received(downloaded_size: int):
+            nonlocal bar
+            bar.n = downloaded_size
+            bar.update(0)
+
+        def on_download_end(_: int):
+            nonlocal bar
+            bar.close()
+
         try:
-            apkd.download_app(pkg, version_code, output_file)
+            apkd.download_app(pkg, version_code, output_file, on_download_start, on_chunk_received, on_download_end)
+        except AppNotFoundError as e:
+            print(e)
         except Exception:
             pass
         queue.task_done()
@@ -223,7 +241,7 @@ def cli():
     if len(packages) < 3:
         threads_count = len(packages)
     for _ in range(threads_count):
-        arguments = [lock, apkd, q]
+        arguments = [apkd, q]
         target = None
         if args.download:
             target = download_apps
@@ -231,6 +249,7 @@ def cli():
             if args.version_code:
                 arguments.append(args.version_code)
         elif args.list_versions:
+            arguments.insert(0, lock)
             arguments.append(table)
             target = list_apps_versions
         thread = Thread(target=target, args=tuple(arguments))
