@@ -128,10 +128,10 @@ class SourceImportError(ImportError):
 class SourceNotFoundError(FileNotFoundError):
     pass
 
-def download_apps(apkd: Apkd, queue: Queue, output_file: str, version_code: int = -1):
+def download_apps(apkd: Apkd, queue: Queue, output_file: str):
     while True:
         try:
-            pkg = queue.get(block=False)
+            pkg, version_code = queue.get(block=False)
         except QueueEmpty:
             break
 
@@ -160,7 +160,7 @@ def download_apps(apkd: Apkd, queue: Queue, output_file: str, version_code: int 
 def list_apps_versions(lock: Lock, apkd: Apkd, queue: Queue, table: PrettyTable):
     while True:
         try:
-            pkg = queue.get(block=False)
+            pkg, _ = queue.get(block=False)
         except QueueEmpty:
             break
 
@@ -189,7 +189,7 @@ def cli():
     parser = argparse.ArgumentParser('apkd')
     parser.add_argument('--package', '-p', help='Package name')
     parser.add_argument('--packages-list', '-l', help='File with package names')
-    parser.add_argument('--version-code', '-vc', help='Version code', type=int)
+    parser.add_argument('--version-code', '-vc', help='Version code', type=int, default=-1)
     parser.add_argument('--download', '-d', help='Download', action='store_true')
     parser.add_argument('--list-versions', '-lv', help='List available versions', action='store_true')
     parser.add_argument('--source', '-s', help='Source', nargs='+', default=sources_names, choices=sources_names)
@@ -210,22 +210,31 @@ def cli():
     if not args.list_versions and not args.download:
         parser.error('At least one of --list-versions and --download is required')
 
-    if not args.download and args.version_code:
+    if not args.download and args.version_code != -1:
         parser.error('--version-code can only be used with --download')
 
     sources = Utils.import_sources(args.source)
     for source_name, source in sources.items():
         apkd.add_source(source_name, source)
 
-    packages: set[str] = set()
+    packages: set[tuple[str, int]] = set()
     if args.package:
-        packages.add(args.package)
+        packages.add((args.package, args.version_code))
     elif args.packages_list:
         with open(args.packages_list, 'r') as f:
             for line in f:
                 line = line.strip()
                 if line:
-                    packages.add(line)
+                    pkg = line
+                    version_code = -1
+                    if '==' in line:
+                        pkg, version_code = line.split('==')
+                        try:
+                            version_code = int(version_code)
+                        except ValueError:
+                            get_logger().warn(f'Incorrect line: {line}, skip')
+                            continue
+                    packages.add((pkg, version_code))
 
     q = Queue()
     for pkg in packages:
@@ -246,8 +255,6 @@ def cli():
         if args.download:
             target = download_apps
             arguments.append(args.output)
-            if args.version_code:
-                arguments.append(args.version_code)
         elif args.list_versions:
             arguments.insert(0, lock)
             arguments.append(table)
