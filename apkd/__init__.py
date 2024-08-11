@@ -1,1 +1,1 @@
-from .main import Apkd, cli
+from .main import Apkd, cli, VERSION

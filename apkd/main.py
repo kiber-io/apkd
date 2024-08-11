@@ -16,6 +16,8 @@ from apkd.utils import (App, AppNotFoundError, AppVersion, BaseSource,
 from typing import Callable
 from tqdm import tqdm
 
+VERSION = '1.1.0'
+
 
 class Utils:
     @staticmethod
@@ -195,7 +197,12 @@ def cli():
     parser.add_argument('--source', '-s', help='Source', nargs='+', default=sources_names, choices=sources_names)
     parser.add_argument('--output', '-o', help='Output file')
     parser.add_argument('--verbose', '-v', help='Verbose logging', action='store_true', default=False)
+    parser.add_argument('--version', help='Print version', action='store_true', default=False)
     args = parser.parse_args(sys.argv[1:])
+
+    if args.version:
+        print(f'apkd by kiber.io\nv{VERSION}')
+        return
 
     if args.verbose:
         logger = get_logger()

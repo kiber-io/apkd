@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+from apkd import VERSION
 
 packages = ['apkd', 'apkd.sources']
 for lib in find_packages('apkd/libs'):
@@ -6,7 +7,7 @@ for lib in find_packages('apkd/libs'):
 
 setup(
     name='apkd',
-    version='1.1.0',
+    version=VERSION,
     author='kiber.io',
     license='MIT',
     url='https://github.com/kiber-io/apkd',
