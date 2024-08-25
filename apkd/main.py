@@ -16,7 +16,7 @@ from apkd.utils import (App, AppNotFoundError, AppVersion, BaseSource,
 from typing import Callable
 from tqdm import tqdm
 
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 
 
 class Utils:
