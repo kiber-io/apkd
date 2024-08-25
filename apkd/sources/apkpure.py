@@ -24,7 +24,7 @@ class Source(BaseSource):
     def get_app_info(self, pkg: str) -> App:
         app: App = super().get_app_info(pkg)
         response = Request.get(
-            f'https://apkpure.com/search?q={pkg}', headers=self.headers)
+            f'https://apkpure.com/search?q={pkg}', use_cloudscraper=True, headers=self.headers)
         html_code = response.text
         soup = BeautifulSoup(html_code, features='html.parser')
         div_first_apk = soup.find('div', class_='first')
@@ -39,7 +39,7 @@ class Source(BaseSource):
         url = url_block.get('href')
         url = cast(str, url)
 
-        response = Request.get(f'{url}/versions', headers=self.headers)
+        response = Request.get(f'{url}/versions', use_cloudscraper=True, headers=self.headers)
         html_code = response.text
         soup = BeautifulSoup(html_code, features='html.parser')
         versions: list[AppVersion] = []

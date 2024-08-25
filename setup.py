@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+
 from apkd import VERSION
 
 packages = ['apkd', 'apkd.sources']
@@ -12,11 +13,11 @@ setup(
     license='MIT',
     url='https://github.com/kiber-io/apkd',
     install_requires=[
-        'beautifulsoup4',
-        'tqdm',
-        'requests',
-        'user-agent',
-        'prettytable',
+        'prettytable==3.11.0',
+        'cloudscraper==1.2.71',
+        'tqdm==4.66.5',
+        'beautifulsoup4==4.12.3',
+        'user_agent==0.1.10'
     ],
     include_package_data=True,
     keywords=['apk downloader', 'apk download', 'android downloader', 'app downloader', 'app download'],
