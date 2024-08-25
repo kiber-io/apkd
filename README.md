@@ -110,9 +110,10 @@ $ apkd -l packages.txt -d
 ```
 
 ## Dependencies
-- [beautifulsoup4](https://pypi.org/project/beautifulsoup4/) - for easy parsing of html pages of some stores
+- [beautifulsoup4](https://pypi.org/project/beautifulsoup4/) - for easy parsing of html pages
 - [tqdm](https://github.com/tqdm/tqdm/) - to visually display the download process
 - [requests](https://pypi.org/project/requests/) - for all network requests
-- [user-agent](https://pypi.org/project/user-agent/) - to hide and randomize the user-agent
+- [user-agent](https://pypi.org/project/user-agent/) - to randomize the user-agent
 - [prettytable](https://pypi.org/project/prettytable/) - for a beautiful display of the list of versions in the table
-- [pypasser](https://pypi.org/project/PyPasser/) - to bypass ReCaptcha at the ApkCombo
+- [pypasser](https://pypi.org/project/PyPasser/) - to bypass ReCaptcha at ApkCombo
+- [cloudscraper](https://github.com/VeNoMouS/cloudscraper) - to bypass Cloudflare at ApkPure

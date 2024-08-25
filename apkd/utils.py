@@ -1,10 +1,10 @@
-from typing import Optional
-
-import requests
 import logging
+from typing import Callable, Optional
 
+import cloudscraper
+import requests
 import requests.adapters
-from typing import Callable
+
 
 class BaseSource:
     name: str
@@ -87,8 +87,10 @@ class AppNotFoundError(Exception):
 
 class Request:
     @staticmethod
-    def get(url, params=None, **kwargs):
+    def get(url, params=None, use_cloudscraper: bool = False, **kwargs):
         session = Request.session()
+        if use_cloudscraper:
+            session = cloudscraper.create_scraper(sess=session)
         return session.request('get', url, params, **kwargs)
 
     @staticmethod
