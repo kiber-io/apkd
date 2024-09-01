@@ -4,18 +4,14 @@
 
 ```shell
 # find the versions...
-$ apkd -p com.instagram.android -lv
-+-----------------------+----------+----------------+--------------+-------------+----------+
-| Package               | Source   | Version name   | Version code | Update date | Size     |
-+-----------------------+----------+----------------+--------------+-------------+----------+
-| com.instagram.android | ApkCombo | 343.0.0.33.101 | 374410331    | N/A         | 69.00 MB |
-| com.instagram.android | ApkCombo | 343.0.0.33.101 | 374410330    | N/A         | 68.00 MB |
-| com.instagram.android | ApkCombo | 343.0.0.33.101 | 374311345    | N/A         | 87.00 MB |
-| com.instagram.android | ApkCombo | 343.0.0.33.101 | 374311344    | N/A         | 89.00 MB |
-| com.instagram.android | ApkCombo | 343.0.0.33.101 | 374311343    | N/A         | 69.00 MB |
-| com.instagram.android | ApkCombo | 343.0.0.33.101 | 374311342    | N/A         | 68.00 MB |
-| com.instagram.android | ApkCombo | 343.0.0.33.101 | 374311341    | N/A         | 68.00 MB |
-+-----------------------+----------+----------------+--------------+-------------+----------+
+$ apkd -p com.twitter.android -lv
++---------------------+---------+-------------------+--------------+-------------+-----------+
+| Package             | Source  | Version name      | Version code | Update date | Size      |
++---------------------+---------+-------------------+--------------+-------------+-----------+
+| com.twitter.android | ApkPure | 10.49.0-release.0 | 310490000    | 10.07.2024  | 120.61 MB |
+| com.twitter.android | ApkPure | 10.48.0-release.0 | 310480000    | 03.07.2024  | 115.43 MB |
+| com.twitter.android | ApkPure | 10.47.0-release.0 | 310470000    | 26.06.2024  | 115.55 MB |
++---------------------+---------+-------------------+--------------+-------------+-----------+
 
 # ...and download them (the latest version is downloaded by default)
 $ apkd -p com.instagram.android -d -s apkcombo
@@ -50,25 +46,31 @@ APK Downloader is a tool that allows you to easily download APK files from popul
 ## Features
 
 - Support for multiple sources
-- Support for batch downloading
-- Automatic search for all sources
+- Automatic search across all sources
+- Batch downloading support
+    - Batch downloading of all applications from a single developer
 - Simple and intuitive command-line interface
-- Modularity and extensibility. PR is welcome
+- Modularity and extensibility; PRs are welcome
 - Active support and development
 - ???
 
 ## Installation
+### Stable version
 ```shell
 pip install git+https://github.com/kiber-io/apkd
 ```
+### Beta version
+```shell
+pip install git+https://github.com/kiber-io/apkd@beta
+```
 
-... and use command "apkd" anywhere!
+And use command "apkd" anywhere!
 
 ### Docker
 1. Install Docker (https://docs.docker.com/get-docker/).
 2. Build Docker image
-```bash
-git clone https://github.com/kiber-io/apkd.git
+```shell
+git clone https://github.com/kiber-io/apkd
 cd apkd
 docker build --tag apkd:1.0 .
 ```
@@ -81,32 +83,44 @@ docker run --rm -v ${PWD}:/usr/src/app apkd:1.0 --help
 docker run --rm -v "%cd%":/usr/src/app apkd:1.0 --help
 ```
 
-## Usage
-
-To download an APK file, run the following command:
+## Use cases
+### Simple download
 ```shell
-$ apkd -p com.instagram.android -d
+$ apkd -p com.instagram.android -d [[-s SOURCE] [-vc <VERSION_CODE>]]
 ```
-To list available versions:
+### List available versions
 ```shell
-$ apkd -p com.instagram.android -lv
+$ apkd -p com.instagram.android -lv [-s SOURCE]
 ```
-To choose source:
-```shell
-$ apkd -p com.instagram.android -d -s apkpure
-```
-To download certain version:
-```shell
-$ apkd -p com.instagram.android -d -vc 310260000
-```
-For batch download:
+### Batch download
 ```shell
 $ cat packages.txt
-> com.instagram.android
-> com.twitter.android
-> com.facebook.katana==454214928
+com.instagram.android
+com.twitter.android
+com.facebook.katana==454214928
 
 $ apkd -l packages.txt -d
+```
+### Batch download of all applications from one developer
+```shell
+# Find the developer id in the store you need
+$ apkd -ld -p com.instagram.android -s apkpure
++-----------------------+---------+--------------+
+| Package               | Source  | Developer ID |
++-----------------------+---------+--------------+
+| com.instagram.android | ApkPure | Instagram    |
++-----------------------+---------+--------------+
+# [Optional] Check out the list of all packages from this developer
+$ apkd -lv -did Instagram -s apkpure
++--------------------------+---------+----------------+--------------+-------------+----------+
+| Package                  | Source  | Version name   | Version code | Update date | Size     |
++--------------------------+---------+----------------+--------------+-------------+----------+
+| com.instagram.android    | ApkPure | 348.0.0.0.7    | 374800592    | 01.09.2024  | 68.42 MB |
++--------------------------+---------+----------------+--------------+-------------+----------+
+| com.instagram.barcelona  | ApkPure | 347.0.0.0.78   | 501706269    | 29.08.2024  | 77.58 MB |
++--------------------------+---------+----------------+--------------+-------------+----------+
+# Download all the apps from this developer
+$ apkd -d -did Instagram -s apkpure
 ```
 
 ## Dependencies
