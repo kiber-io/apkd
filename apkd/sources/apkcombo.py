@@ -1,9 +1,10 @@
 
 from bs4 import BeautifulSoup, Tag
-from apkd.libs.pypasser import reCaptchaV3
 from user_agent import generate_user_agent
 
-from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource, Request
+from apkd.libs.pypasser import reCaptchaV3
+from apkd.utils import (App, AppNotFoundError, AppVersion, BaseSource, Request,
+                        get_logger)
 
 
 class Source(BaseSource):
@@ -19,7 +20,6 @@ class Source(BaseSource):
             'Accept-Encoding': 'gzip, deflate',
             'Accept-Language': 'en-US;q=0.5',
             'Referer': 'https://apkcombo.com/ru/downloader/',
-            # 'token': recaptcha_token
         }
         response = Request.post(
             'https://apkcombo.com/checkin', headers=self.headers)
@@ -35,8 +35,12 @@ class Source(BaseSource):
         soup = BeautifulSoup(html_code, features='html.parser')
         versions: list[AppVersion] = []
         for block in soup.find_all('a', class_='variant'):
-            type_apk = block.find('span', class_='type-apk')
-            if type_apk is None or type_apk.get_text().strip() != 'APK':
+            type_apk = None
+            type_apk_block = block.find('span', class_='type-apk')
+            if type_apk_block is not None:
+                type_apk = type_apk_block.get_text().strip()
+            if type_apk != 'APK':
+                get_logger().warning(f'ApkCombo: {pkg} is not of the APK type')
                 continue
             download_url = block.get('href')
             version_name_block = block.find('span', class_='vername')
