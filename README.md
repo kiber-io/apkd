@@ -33,15 +33,17 @@ APK Downloader is a tool that allows you to easily download APK files from popul
 
 `Update date` - support for getting the app update date
 
-| Store                                       | Multiple versions  |    Update date     |
-|---------------------------------------------|:------------------:|:------------------:|
-| [F-Droid](https://f-droid.org)              | :heavy_check_mark: | :heavy_check_mark: |
-| [ApkPure](https://apkpure.com)              | :heavy_check_mark: | :heavy_check_mark: |
-| [ApkCombo](https://apkcombo.com)            | :heavy_check_mark: |        :x:         |
-| [AppGallery](https://appgallery.huawei.com) |        :x:         |        :x:         |
-| [RuStore](https://rustore.ru)               |        :x:         | :heavy_check_mark: |
-| [RuMarket](https://ruplay.market)           |        :x:         | :heavy_check_mark: |
-| [NashStore](https://nashstore.ru)           |        :x:         | :heavy_check_mark: |
+`Developer ID` - support for downloading of all applications from a single developer
+
+| Store                                       | Multiple versions  |    Update date     | Developer ID |
+|---------------------------------------------|:------------------:|:------------------:| - |
+| [F-Droid](https://f-droid.org)              | :heavy_check_mark: | :heavy_check_mark: |:x:
+| [ApkPure](https://apkpure.com)              | :heavy_check_mark: | :heavy_check_mark: |:heavy_check_mark:
+| [ApkCombo](https://apkcombo.com)            | :heavy_check_mark: |        :x:         |:heavy_check_mark:
+| [AppGallery](https://appgallery.huawei.com) |        :x:         |        :x:         |:x:
+| [RuStore](https://rustore.ru)               |        :x:         | :heavy_check_mark: |:heavy_check_mark:
+| [RuMarket](https://ruplay.market)           |        :x:         | :heavy_check_mark: |:x:
+| [NashStore](https://nashstore.ru)           |        :x:         | :heavy_check_mark: |:x:
 
 ## Features
 
@@ -102,6 +104,11 @@ com.facebook.katana==454214928
 $ apkd -l packages.txt -d
 ```
 ### Batch download of all applications from one developer
+Due to the fact that different stores store the developer's name in different formats (or even do not store it at all), there are several restrictions:
+- Before downloading, you need to find out the developer ID from a specific store using any package name from that developer
+- Simultaneous downloads from different stores are possible only if these stores have the same developer ID (e.g., some IDs match ApkCombo and APKPure)
+- This type of download is not available from all stores (the list of supported stores will be updated whenever possible). A list of stores that support this feature can be found in the table at the top of the file
+
 ```shell
 # Find the developer id in the store you need
 $ apkd -ld -p com.instagram.android -s apkpure
