@@ -193,7 +193,8 @@ def list_apps_versions(lock: Lock, apkd: Apkd, queue: Queue, table: PrettyTable,
         try:
             apps = apkd.get_app_info(pkg, versions_limit)
         except Exception as e:
-            get_logger().error(f'Error at list_apps_versions for "{pkg}": {e}')
+            if not isinstance(e, AppNotFoundError):
+                get_logger().error(f'Error at list_apps_versions for "{pkg}": {e}')
             not_available = 'N/A'
             with lock:
                 table.add_row([pkg, not_available, not_available, not_available, not_available, not_available])
@@ -257,6 +258,7 @@ def divide_rows_by_source(table: PrettyTable):
             source = row[1]
 
 def cli():
+    get_logger().setLevel(logging.ERROR)
     apkd = Apkd(auto_load_sources=False)
     sources_names = Utils.get_available_sources_names()
 
@@ -270,7 +272,7 @@ def cli():
     parser.add_argument('--list-versions', '-lv', help='List available versions', action='store_true')
     parser.add_argument('--source', '-s', help='Source', nargs='+', default=sources_names, choices=sources_names)
     parser.add_argument('--output', '-o', help='Output file', type=str)
-    parser.add_argument('--verbose', '-v', help='Verbose logging', action='store_true', default=False)
+    parser.add_argument('--verbose', '-v', help='Verbose logging', action='count', default=0)
     parser.add_argument('--version', help='Print version', action='store_true', default=False)
     args = parser.parse_args(sys.argv[1:])
 
@@ -278,9 +280,12 @@ def cli():
         print(f'apkd by kiber.io\nv{VERSION}')
         return
 
-    if args.verbose:
+    if args.verbose > 0:
         logger = get_logger()
-        logger.setLevel(logging.DEBUG)
+        if args.verbose == 1:
+            logger.setLevel(logging.WARNING)
+        else:
+            logger.setLevel(logging.DEBUG)
         logging_handler = logging.StreamHandler()
         logging_handler.setFormatter(logging.Formatter('%(message)s'))
         logger.addHandler(logging_handler)
@@ -365,18 +370,26 @@ def cli():
         assert table is not None
         # sort table by "Source" + "Version code" columns
         def sort_by_pkg_and_vc(row1, row2):
-            if row1[3] == 'N/A':
+            if row1[3] == 'N/A' and row2[3] != 'N/A':
                 return 1
-            if row2[3] == 'N/A':
+            elif row2[3] == 'N/A' and row1[3] != 'N/A':
                 return -1
-            pkg1 = row1[0].lower()
-            pkg2 = row2[0].lower()
-            if pkg1 > pkg2:
-                return 1
-            elif pkg1 < pkg2:
-                return -1
+            elif row2[3] == 'N/A' and row1[3] == 'N/A':
+                pkg1 = row1[0].lower()
+                pkg2 = row2[0].lower()
+                if pkg1 > pkg2:
+                    return 1
+                else:
+                    return -1
             else:
-                return row2[3] - row1[3]
+                pkg1 = row1[0].lower()
+                pkg2 = row2[0].lower()
+                if pkg1 > pkg2:
+                    return 1
+                elif pkg1 < pkg2:
+                    return -1
+                else:
+                    return row2[3] - row1[3]
         table._rows.sort(key=cmp_to_key(sort_by_pkg_and_vc))
         # if args.developer_id:
         #     def sort_by_pkg_and_vc(row1, row2):
