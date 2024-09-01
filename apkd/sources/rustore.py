@@ -2,7 +2,8 @@ from datetime import datetime
 
 from user_agent import generate_user_agent
 
-from apkd.utils import App, AppNotFoundError, AppVersion, BaseSource, Request
+from apkd.utils import (App, AppNotFoundError, AppVersion, BaseSource,
+                        DeveloperNotFoundError, Request)
 
 
 class Source(BaseSource):
@@ -24,8 +25,8 @@ class Source(BaseSource):
             'deviceType': 'mobile'
         }
 
-    def get_app_info(self, pkg: str) -> App:
-        app: App = super().get_app_info(pkg)
+    def get_app_info(self, pkg: str, versions_limit: int = -1) -> App:
+        app: App = super().get_app_info(pkg, versions_limit)
         response = Request.get(
             f'https://backapi.rustore.ru/applicationData/overallInfo/{pkg}', headers=self.headers)
         json_code = response.json()
@@ -58,3 +59,26 @@ class Source(BaseSource):
         app.set_versions(
             [AppVersion(version, version_code, file_size, self, update_date, download_url)])
         return app
+
+    def get_developer_id(self, package_name: str) -> str|None:
+        response = Request.get(
+            f'https://backapi.rustore.ru/applicationData/overallInfo/{package_name}', headers=self.headers)
+        json_code = response.json()
+        if 'code' not in json_code or json_code['code'] != 'OK':
+            raise AppNotFoundError()
+        developer_id = json_code['body']['publicCompanyId']
+
+        return developer_id
+
+    def find_packages_from_developer(self, developer_id: str) -> set[str]:
+        packages = set()
+
+        response = Request.get(
+            f'https://backapi.rustore.ru/applicationData/devs/{developer_id}/apps?limit=999999', headers=self.headers)
+        json_code = response.json()
+        if 'code' not in json_code or json_code['code'] != 'OK':
+            raise DeveloperNotFoundError()
+        for app in json_code['body']['elements']:
+            packages.add(app['packageName'])
+
+        return packages

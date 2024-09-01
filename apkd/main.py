@@ -7,16 +7,15 @@ from importlib import util as importutil
 from queue import Empty as QueueEmpty
 from queue import Queue
 from threading import Lock, Thread
-from typing import Optional
+from typing import Callable, Optional
 
 from prettytable import PrettyTable
-
-from apkd.utils import (App, AppNotFoundError, AppVersion, BaseSource,
-                        get_logger)
-from typing import Callable
 from tqdm import tqdm
 
-VERSION = '1.1.1'
+from apkd.utils import (App, AppNotFoundError, AppVersion, BaseSource,
+                        DeveloperNotFoundError, get_logger)
+
+VERSION = '1.1.2'
 
 
 class Utils:
@@ -90,12 +89,12 @@ class Apkd:
         sources = Utils.import_sources()
         self.__sources = sources
 
-    def get_app_info(self, package_name: str) -> list[App]:
+    def get_app_info(self, package_name: str, versions_limit: int = -1) -> list[App]:
         apps: list[App] = list()
 
         for source in self.__sources.values():
             try:
-                app = source.get_app_info(package_name)
+                app = source.get_app_info(package_name, versions_limit)
             except AppNotFoundError:
                 continue
             apps.append(app)
@@ -123,6 +122,33 @@ class Apkd:
             last_version = Utils.find_last_version(apps)
             if last_version is not None:
                 last_version.source.download_app(package_name, last_version, output_file, on_download_start, on_chunk_received, on_download_end)
+
+    def get_developer_id(self, package_name: str) -> set[tuple[BaseSource, str]]:
+        developers: set[tuple[BaseSource, str]] = set()
+
+        for source in self.__sources.values():
+            try:
+                developer = source.get_developer_id(package_name)
+            except AppNotFoundError:
+                continue
+            if developer is not None:
+                developers.add((source, developer))
+
+        if len(developers) == 0:
+            raise AppNotFoundError(f'{package_name} not found')
+
+        return developers
+
+    def get_packages_from_developer(self, developer_id: str) -> set[str]:
+        packages = set()
+
+        for source in self.__sources.values():
+            try:
+                packages.update(source.find_packages_from_developer(developer_id))
+            except DeveloperNotFoundError:
+                continue
+
+        return packages
 
 class SourceImportError(ImportError):
     pass
@@ -153,13 +179,11 @@ def download_apps(apkd: Apkd, queue: Queue, output_file: str):
 
         try:
             apkd.download_app(pkg, version_code, output_file, on_download_start, on_chunk_received, on_download_end)
-        except AppNotFoundError as e:
-            print(e)
-        except Exception:
+        except AppNotFoundError:
             pass
         queue.task_done()
 
-def list_apps_versions(lock: Lock, apkd: Apkd, queue: Queue, table: PrettyTable):
+def list_apps_versions(lock: Lock, apkd: Apkd, queue: Queue, table: PrettyTable, versions_limit: int = -1):
     while True:
         try:
             pkg, _ = queue.get(block=False)
@@ -167,8 +191,9 @@ def list_apps_versions(lock: Lock, apkd: Apkd, queue: Queue, table: PrettyTable)
             break
 
         try:
-            apps = apkd.get_app_info(pkg)
-        except Exception:
+            apps = apkd.get_app_info(pkg, versions_limit)
+        except Exception as e:
+            get_logger().error(f'Error at list_apps_versions for "{pkg}": {e}')
             not_available = 'N/A'
             with lock:
                 table.add_row([pkg, not_available, not_available, not_available, not_available, not_available])
@@ -184,18 +209,67 @@ def list_apps_versions(lock: Lock, apkd: Apkd, queue: Queue, table: PrettyTable)
 
         queue.task_done()
 
+def get_developer_id(lock: Lock, apkd: Apkd, queue: Queue, table: PrettyTable):
+    while True:
+        try:
+            pkg, _ = queue.get(block=False)
+        except QueueEmpty:
+            break
+
+        try:
+            developers = apkd.get_developer_id(pkg)
+        except Exception:
+            not_available = 'N/A'
+            with lock:
+                table.add_row([pkg, not_available, not_available])
+            queue.task_done()
+            continue
+
+        with lock:
+            for source, developer in developers:
+                table.add_row([pkg, source.name, developer])
+
+        queue.task_done()
+
+def divide_rows_by_pkg(table: PrettyTable):
+    pkg = None
+    for idx, row in enumerate(table.rows):
+        if pkg is None:
+            pkg = row[0]
+
+        if pkg != row[0]:
+            if row[3] == 'N/A':
+                if pkg != '-':
+                    table._dividers[idx-1] = True
+                pkg = '-'
+            else:
+                table._dividers[idx-1] = True
+                pkg = row[0]
+
+def divide_rows_by_source(table: PrettyTable):
+    source = None
+    for idx, row in enumerate(table.rows):
+        if source is None:
+            source = row[1]
+
+        if source != row[1]:
+            table._dividers[idx-1] = True
+            source = row[1]
+
 def cli():
     apkd = Apkd(auto_load_sources=False)
     sources_names = Utils.get_available_sources_names()
 
     parser = argparse.ArgumentParser('apkd')
-    parser.add_argument('--package', '-p', help='Package name')
-    parser.add_argument('--packages-list', '-l', help='File with package names')
+    parser.add_argument('--package', '-p', help='Package name', type=str)
+    parser.add_argument('--packages-list', '-l', help='File with package names', type=str)
     parser.add_argument('--version-code', '-vc', help='Version code', type=int, default=-1)
+    parser.add_argument('--list-developers', '-ld', help='Get developer name by pkg', action='store_true')
+    parser.add_argument('--developer-id', '-did', help='Developer ID', type=str)
     parser.add_argument('--download', '-d', help='Download', action='store_true')
     parser.add_argument('--list-versions', '-lv', help='List available versions', action='store_true')
     parser.add_argument('--source', '-s', help='Source', nargs='+', default=sources_names, choices=sources_names)
-    parser.add_argument('--output', '-o', help='Output file')
+    parser.add_argument('--output', '-o', help='Output file', type=str)
     parser.add_argument('--verbose', '-v', help='Verbose logging', action='store_true', default=False)
     parser.add_argument('--version', help='Print version', action='store_true', default=False)
     args = parser.parse_args(sys.argv[1:])
@@ -211,14 +285,16 @@ def cli():
         logging_handler.setFormatter(logging.Formatter('%(message)s'))
         logger.addHandler(logging_handler)
 
-    if args.list_versions and args.download:
-        parser.error('--list-versions and --download cannot be used together')
-
-    if not args.list_versions and not args.download:
-        parser.error('At least one of --list-versions and --download is required')
+    if [args.list_versions, args.download, args.list_developers].count(True) == 0:
+        parser.error('At least one of --list-versions/--download/--get-developer is required')
+    elif [args.list_versions, args.download, args.list_developers].count(True) > 1:
+        parser.error('--list-versions/--download/--get-developer cannot be used together')
 
     if not args.download and args.version_code != -1:
         parser.error('--version-code can only be used with --download')
+
+    if args.list_versions and (not args.package and not args.packages_list and not args.developer_id):
+        parser.error('--list-versions required one of --package/--packages-list/--developer-id option')
 
     sources = Utils.import_sources(args.source)
     for source_name, source in sources.items():
@@ -242,6 +318,9 @@ def cli():
                             get_logger().warn(f'Incorrect line: {line}, skip')
                             continue
                     packages.add((pkg, version_code))
+    elif args.developer_id:
+        for pkg in apkd.get_packages_from_developer(args.developer_id):
+            packages.add((pkg, -1))
 
     q = Queue()
     for pkg in packages:
@@ -250,6 +329,8 @@ def cli():
     table: PrettyTable|None = None
     if args.list_versions:
         table = PrettyTable(field_names=['Package', 'Source', 'Version name', 'Version code', 'Update date', 'Size'], align='l')
+    elif args.list_developers:
+        table = PrettyTable(field_names=['Package', 'Source', 'Developer ID'], align='l')
 
     lock = Lock()
     threads = set()
@@ -265,7 +346,13 @@ def cli():
         elif args.list_versions:
             arguments.insert(0, lock)
             arguments.append(table)
+            if args.developer_id:
+                arguments.append(1)
             target = list_apps_versions
+        elif args.list_developers:
+            arguments.insert(0, lock)
+            arguments.append(table)
+            target = get_developer_id
         thread = Thread(target=target, args=tuple(arguments))
         thread.start()
         threads.add(thread)
@@ -276,24 +363,55 @@ def cli():
 
     if args.list_versions:
         assert table is not None
-        def sort(row1, row2):
+        # sort table by "Source" + "Version code" columns
+        def sort_by_pkg_and_vc(row1, row2):
             if row1[3] == 'N/A':
                 return 1
             if row2[3] == 'N/A':
                 return -1
-            if row1[0] > row2[0]:
+            pkg1 = row1[0].lower()
+            pkg2 = row2[0].lower()
+            if pkg1 > pkg2:
                 return 1
-            elif row1[0] < row2[0]:
+            elif pkg1 < pkg2:
                 return -1
             else:
                 return row2[3] - row1[3]
-        table._rows.sort(key=cmp_to_key(sort))
-        pkg = None
-        for idx, row in enumerate(table.rows):
-            if pkg is None:
-                pkg = row[0]
+        table._rows.sort(key=cmp_to_key(sort_by_pkg_and_vc))
+        # if args.developer_id:
+        #     def sort_by_pkg_and_vc(row1, row2):
+        #         if row1[3] == 'N/A':
+        #             return 1
+        #         if row2[3] == 'N/A':
+        #             return -1
+        #         pkg1 = row1[0].lower()
+        #         pkg2 = row2[0].lower()
+        #         if pkg1 > pkg2:
+        #             return 1
+        #         elif pkg1 < pkg2:
+        #             return -1
+        #         else:
+        #             source1 = row1[1].lower()
+        #             source2 = row2[1].lower()
+        #             if source1 > source2:
+        #                 return 1
+        #             else:
+        #                 return -1
 
-            if pkg != row[0]:
-                table._dividers[idx-1] = True
-                pkg = row[0]
+        #     table._rows.sort(key=cmp_to_key(sort_by_pkg_and_vc))
+        #     divide_rows_by_pkg(table)
+        # else:
+        divide_rows_by_pkg(table)
+        print(table)
+    elif args.list_developers:
+        assert table is not None
+        # sort table by "Source" column
+        def sort(row1, row2):
+            if row1[2] == 'N/A':
+                return 1
+            if row2[2] == 'N/A':
+                return -1
+            return row2[1] < row1[1]
+        table._rows.sort(key=cmp_to_key(sort))
+        divide_rows_by_pkg(table)
         print(table)

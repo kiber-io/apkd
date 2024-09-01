@@ -20,8 +20,8 @@ class Source(BaseSource):
             'User-Agent': f'RuMarket(3.5.6);sdk_gphone64_x86_64 Google;34;{uuid4()};'
         }
 
-    def get_app_info(self, pkg: str) -> App:
-        app: App = super().get_app_info(pkg)
+    def get_app_info(self, pkg: str, versions_limit: int = -1) -> App:
+        app: App = super().get_app_info(pkg, versions_limit)
         response = Request.get(
             f'https://store-api.ruplay.market/api/v1/app/getApp/{pkg}', headers=self.headers)
         if response.status_code == 404:
