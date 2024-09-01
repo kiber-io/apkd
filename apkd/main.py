@@ -15,7 +15,7 @@ from tqdm import tqdm
 from apkd.utils import (App, AppNotFoundError, AppVersion, BaseSource,
                         DeveloperNotFoundError, get_logger)
 
-VERSION = '1.1.2'
+VERSION = '1.1.2-beta'
 
 
 class Utils:
