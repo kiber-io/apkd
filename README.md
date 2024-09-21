@@ -1,6 +1,7 @@
 # APK Downloader
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/your-username/apk-downloader/blob/main/LICENSE)
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-Repository-blue?logo=docker)](https://hub.docker.com/r/kiber1o/apkd)
 
 ```shell
 # find the versions...
@@ -65,7 +66,6 @@ pip install git+https://github.com/kiber-io/apkd
 ... and use command "apkd" anywhere!
 
 ### Docker
-[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-Repository-blue?logo=docker)](https://hub.docker.com/r/kiber1o/apkd)
 ```shell
 docker run kiber1o/apkd --version
 
