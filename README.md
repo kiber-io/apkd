@@ -65,20 +65,10 @@ pip install git+https://github.com/kiber-io/apkd
 ... and use command "apkd" anywhere!
 
 ### Docker
-1. Install Docker (https://docs.docker.com/get-docker/).
-2. Build Docker image
-```bash
-git clone https://github.com/kiber-io/apkd.git
-cd apkd
-docker build --tag apkd:1.0 .
-```
-3. Run
 ```shell
-# on linux
-docker run --rm -v ${PWD}:/usr/src/app apkd:1.0 --help
+docker run kiber1o/apkd --version
 
-# on windows
-docker run --rm -v "%cd%":/usr/src/app apkd:1.0 --help
+docker run kiber1o/apkd:beta --version # for beta version
 ```
 
 ## Usage
