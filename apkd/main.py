@@ -21,7 +21,7 @@ from apkd.utils import (
     get_logger,
 )
 
-VERSION = "1.1.2-beta"
+VERSION = "1.1.2"
 
 
 class Utils:
