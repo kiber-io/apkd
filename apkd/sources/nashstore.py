@@ -36,8 +36,8 @@ class Source(BaseSource):
             'Content-Type': 'application/json'
         }
 
-    def get_app_info(self, pkg: str) -> App:
-        app: App = super().get_app_info(pkg)
+    def get_app_info(self, pkg: str, versions_limit: int = -1) -> App:
+        app: App = super().get_app_info(pkg, versions_limit)
         response = Request.post(
             'https://store.nashstore.ru/api/mobile/v1/profile/updates', headers=self.headers, data=json.dumps({
                 "apps": {

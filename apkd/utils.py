@@ -9,8 +9,10 @@ import requests.adapters
 class BaseSource:
     name: str
     headers: dict
+    __versions_limit: int = -1
 
-    def get_app_info(self, pkg: str) -> 'App':
+    def get_app_info(self, pkg: str, versions_limit: int = -1) -> 'App':
+        self.__versions_limit = versions_limit
         return App(pkg, self)
 
     def download_app(self, pkg: str, version: 'AppVersion', output_file: Optional[str] = None, on_download_start: Callable[['AppVersion', int], None]|None = None, on_chunk_received: Callable[[int], None]|None = None, on_download_end: Callable[[int], None]|None = None):
@@ -43,6 +45,15 @@ class BaseSource:
             raise TypeError(f'Download link missed for version "{version.code}"')
 
         return version.download_link
+
+    def get_developer_id(self, package_name: str) -> str|None:
+        return None
+
+    def find_packages_from_developer(self, developer_id: str) -> set[str]:
+        return set()
+
+    def is_versions_limit(self, versions: list):
+        return self.__versions_limit != -1 and len(versions) >= self.__versions_limit
 
 class AppVersion:
     download_link: Optional[str] = None
@@ -82,8 +93,10 @@ class App:
 
 
 class AppNotFoundError(Exception):
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
+    pass
+
+class DeveloperNotFoundError(Exception):
+    pass
 
 class Request:
     @staticmethod
@@ -91,6 +104,7 @@ class Request:
         session = Request.session()
         if use_cloudscraper:
             session = cloudscraper.create_scraper(sess=session)
+            # Request.__set_middleware(session, RequestsMiddlewareCloudscraper())
         return session.request('get', url, params, **kwargs)
 
     @staticmethod
@@ -100,17 +114,29 @@ class Request:
 
     @staticmethod
     def session():
-        middleware = RequestsMiddleware()
         session = requests.Session()
+        Request.__set_middleware(session, RequestsMiddleware())
+        return session
+
+    @staticmethod
+    def __set_middleware(session: requests.Session, middleware: requests.adapters.HTTPAdapter):
         session.mount('http://', middleware)
         session.mount('https://', middleware)
-        return session
 
 class RequestsMiddleware(requests.adapters.HTTPAdapter):
     def send(self, request: requests.PreparedRequest, stream: bool = False, timeout: None | float | tuple[float, float] | tuple[float, None] = None, verify: bool | str = True, cert: None | bytes | str | tuple[bytes | str, bytes | str] = None, proxies = None) -> requests.Response:
         response = super().send(request, stream, timeout, verify, cert, proxies)
-        get_logger().debug(f'Request: {request.url}, response code: {response.status_code}')
+        log_request(response.request, response)
         return response
+
+class RequestsMiddlewareCloudscraper(cloudscraper.CipherSuiteAdapter):
+    def send(self, request: requests.PreparedRequest, stream: bool = False, timeout: None | float | tuple[float, float] | tuple[float, None] = None, verify: bool | str = True, cert: None | bytes | str | tuple[bytes | str, bytes | str] = None, proxies = None) -> requests.Response:
+        response = super().send(request, stream, timeout, verify, cert, proxies)
+        log_request(response.request, response)
+        return response
+
+def log_request(request: requests.PreparedRequest, response: requests.Response):
+    get_logger().debug(f'Request: {request.url}, response code: {response.status_code}')
 
 def get_logger():
     return logging.getLogger('apkd')

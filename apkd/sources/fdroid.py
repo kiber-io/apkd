@@ -20,8 +20,8 @@ class Source(BaseSource):
             'User-Agent': generate_user_agent()
         }
 
-    def get_app_info(self, pkg: str) -> App:
-        app: App = super().get_app_info(pkg)
+    def get_app_info(self, pkg: str, versions_limit: int = -1) -> App:
+        app: App = super().get_app_info(pkg, versions_limit)
         response = Request.get(
             f'https://f-droid.org/en/packages/{pkg}', headers=self.headers)
         if response.status_code == 404:
@@ -48,6 +48,8 @@ class Source(BaseSource):
             file_size = int(float(file_size_mb) * 1024 * 1024)
 
             versions.append(AppVersion(version_name, int(version_code), file_size, self, update_date, download_link))
+            if self.is_versions_limit(versions):
+                break
 
         app.set_versions(versions)
         return app
