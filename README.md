@@ -30,6 +30,8 @@ com.snapchat.android ver. 150472 (ApkCombo):  10%|██          | 15.7M/155M [
 APK Downloader is a tool that allows you to easily download APK files from popular app stores. With this tool, you can quickly obtain APK files for various Android applications directly to your local machine.
 
 ## Supported app stores
+> :warning: **Note:** ApkCombo may work unstable and give different responses to the same request. I am solving this problem.
+
 `Multiple versions` - support for downloading different versions of the application (key `-lv`)
 
 `Update date` - support for getting the app update date
