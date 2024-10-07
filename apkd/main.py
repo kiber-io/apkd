@@ -194,7 +194,7 @@ def cli():
     parser.add_argument('--version-code', '-vc', help='Version code', type=int, default=-1)
     parser.add_argument('--download', '-d', help='Download', action='store_true')
     parser.add_argument('--list-versions', '-lv', help='List available versions', action='store_true')
-    parser.add_argument('--source', '-s', help='Source', nargs='+', default=sources_names, choices=sources_names)
+    parser.add_argument('--source', '-s', help='Source', nargs='+', type=str.lower, default=sources_names, choices=sources_names)
     parser.add_argument('--output', '-o', help='Output file')
     parser.add_argument('--verbose', '-v', help='Verbose logging', action='store_true', default=False)
     parser.add_argument('--version', help='Print version', action='store_true', default=False)
