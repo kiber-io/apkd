@@ -30,8 +30,8 @@ class Source(BaseSource):
             'sysUserAgent': 'Mozilla/5.0 (Linux; Android 14; 23127PN0CG Build/UKQ1.230804.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/122.0.6261.106 Mobile Safari/537.36',
         }
 
-    def get_app_info(self, pkg: str) -> App:
-        app: App = super().get_app_info(pkg)
+    def get_app_info(self, pkg: str, versions_limit: int = -1) -> App:
+        app: App = super().get_app_info(pkg, versions_limit)
         response = Request.post('https://store-drru.hispace.dbankcloud.ru/hwmarket/api/clientApi', headers=self.headers, data=urlencode({
             'callWay': '2',
             'clientPackage': 'com.huawei.appmarket',
