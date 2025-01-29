@@ -109,6 +109,9 @@ class Apkd:
                 app = source.get_app_info(package_name, versions_limit)
             except AppNotFoundError:
                 continue
+            except Exception as e:
+                get_logger().error(f"Error at {source.name}: {e}")
+                continue
             apps.append(app)
 
         if len(apps) == 0:
