@@ -1,3 +1,7 @@
+> ⚠️ **Note:** This project is still maintained,  
+> but active development and new features are now happening in the [new Go-based version](https://github.com/kiber-io/apkdgo).  
+> It's recommended to switch to it, especially for new use cases or projects.
+
 # APK Downloader
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/your-username/apk-downloader/blob/main/LICENSE)
