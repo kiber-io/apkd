@@ -1,6 +1,6 @@
-> ⚠️ **Note:** This project is still maintained,  
-> but active development and new features are now happening in the [new Go-based version](https://github.com/kiber-io/apkdgo).  
-> It's recommended to switch to it, especially for new use cases or projects.
+> ⚠️ **Note:** This project has been discontinued and is no longer maintained.
+> All further development and new features are in the [new Go-based version](https://github.com/kiber-io/apkdgo).  
+> Please migrate to it.
 
 # APK Downloader
 
